@@ -42,3 +42,10 @@ urlpatterns = [
     path('404/', views.error_404, name='error_404'),
     path('submit-appointment/', views.appointment_submit, name='appointment_submit'),
 ]
+
+from django.conf import settings
+
+from django.conf.urls.static import static
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
