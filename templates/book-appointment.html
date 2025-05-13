@@ -189,9 +189,9 @@
                     <!-- Our Appointment Box Start -->
                     <div class="our-appointment-box">
                         <!-- Appointment Form Start -->
-                        <div class="appointment-form">
+                        <div class="appointment-form" id="mainContent">
                             <!-- Contact Us Form Start -->
-                              <form id="appointmentForm" action="." method="POST" data-toggle="validator" class="wow fadeInUp">
+                              <form id="appointmentForm" action="#" method="POST" data-toggle="validator" class="wow fadeInUp">
     {% csrf_token %}
     <div class="row">
       <div class="form-group col-md-6 mb-4">
@@ -756,44 +756,66 @@
         </div>
      </footer>
     <!-- Footer End -->
-   <script>
+  <script>
   function showPopup() {
-    document.getElementById("popupOverlay").style.display = "flex";
-    document.getElementById("mainContent").classList.add("blur-bg");
+    const popupOverlay = document.getElementById("popupOverlay");
+    const mainContent = document.getElementById("mainContent");
 
-    setTimeout(closePopup, 3000);
+    if (popupOverlay && mainContent) {
+      popupOverlay.style.display = "flex";
+      mainContent.classList.add("blur-bg");
+      setTimeout(closePopup, 3000);
+    }
   }
 
   function closePopup() {
-    document.getElementById("popupOverlay").style.display = "none";
-    document.getElementById("mainContent").classList.remove("blur-bg");
-  }
+    const popupOverlay = document.getElementById("popupOverlay");
+    const mainContent = document.getElementById("mainContent");
 
-  function handleFormSubmit(event) {
-    event.preventDefault();
-    const form = event.target;
-
-    if (form.checkValidity()) {
-      showPopup();
-      form.reset(); // Optional: reset form after submission
-    } else {
-      form.reportValidity(); // Show browser validation messages
+    if (popupOverlay && mainContent) {
+      popupOverlay.style.display = "none";
+      mainContent.classList.remove("blur-bg");
     }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("appointmentForm");
-    if (form) {
-      form.addEventListener("submit", handleFormSubmit);
+
+    if (!form) {
+      console.error("Form not found");
+      return;
     }
 
-    const dateInput = document.getElementById("date");
-    if (dateInput) {
-      const today = new Date().toISOString().split("T")[0];
-      dateInput.setAttribute("min", today);
-    }
+    // Proper submit event
+    form.addEventListener("submit", function (event) {
+      event.preventDefault(); // Prevent default page reload
+      const formData = new FormData(form);
+
+      // Show popup immediately
+      showPopup();
+      form.reset();
+
+      // Submit data to server
+      fetch("/submit-appointment/", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.success) {
+            alert("Form saved, but server returned error.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Server error while saving form.");
+        });
+    });
   });
 </script>
+
+
+
 
       
     <!-- Jquery Library File -->

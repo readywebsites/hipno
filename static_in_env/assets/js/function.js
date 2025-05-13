@@ -319,7 +319,7 @@
 		/* Ajax call to submit form */
 		$.ajax({
 			type: "POST",
-			url: ".",
+			url: "form-appointment.php",
 			data: $appointmentForm.serialize(),
 			success : function(text){
 				if (text === "success"){
