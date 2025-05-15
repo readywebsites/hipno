@@ -16,7 +16,8 @@ class Appointment(models.Model):
     phone = models.CharField(max_length=15)
     services = models.CharField(max_length=50, choices=SERVICE_CHOICES)
     date = models.DateField()
-
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
         return f"{self.fname} {self.lname} - {self.services}"
 

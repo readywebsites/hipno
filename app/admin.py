@@ -5,4 +5,6 @@ from .models import Appointment
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = ('fname', 'lname', 'email', 'phone', 'services', 'date')
     search_fields = ('fname', 'lname', 'email')
+    readonly_fields = ['submitted_at'] 
 
+admin.site.register(Appointment, AppointmentAdmin)
