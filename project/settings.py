@@ -44,8 +44,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://quirkle.biz499.com"
+    "https://quirkle.biz499.com",
+    "https://www.quirkle.biz499.com",  
 ]
+
 
 # Application definition
 
