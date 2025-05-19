@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import now
 
 class Appointment(models.Model):
     SERVICE_CHOICES = [
@@ -31,7 +32,7 @@ class contact(models.Model):
     email = models.EmailField()
     message = models.CharField(max_length=1000)
     date = models.DateField()
-    submitted_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(default=now)
 
     def __str__(self):
         return f"{self.fname} {self.lname}"
