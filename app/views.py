@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Appointment
+from .models import Appointment, contact
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from datetime import date
@@ -50,7 +50,47 @@ def appointment_submit(request):
         return JsonResponse({"success": True})
     return JsonResponse({"success": False})
 
+@csrf_exempt
+def contact_submit(request):
+    if request.method == "POST":
+        fname = request.POST.get("fname")
+        lname = request.POST.get("lname")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        message = request.POST.get("message")
+        date = request.POST.get("date")
 
+        # Save form data
+        contact_obj = contact.objects.create(
+            fname=fname,
+            lname=lname,
+            email=email,
+            phone=phone,
+            message=message,
+            date=date
+        )
+
+        # Email to user
+        send_mail(
+            subject="Your appointment request is received",
+            message=f"Hi {fname},\n\nYour enquiry has been submitted successfully. We'll get back to you shortly.",
+            from_email="fatemadhalech16@gmail.com",
+            recipient_list=[email],
+            fail_silently=True,
+        )
+
+        # Email to admin
+        send_mail(
+            subject="New appointment inquiry",
+            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nMessage: {message}\nDate: {date}",
+            from_email="fatemadhalech16@gmail.com",
+            recipient_list=["fatemadhalech16@gmail.com"],
+            fail_silently=True,
+        )
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False})
 def index(request):
     return render(request, 'index.html')
 

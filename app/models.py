@@ -21,3 +21,19 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.fname} {self.lname} - {self.services}"
 
+# models.py
+from django.db import models
+
+class contact(models.Model):
+    fname = models.CharField(max_length=100)
+    lname = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField()
+    message = models.CharField(max_length=1000)
+    date = models.DateField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.fname} {self.lname}"
+
+

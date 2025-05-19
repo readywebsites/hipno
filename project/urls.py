@@ -41,6 +41,7 @@ urlpatterns = [
     path('video-gallery/', views.video_gallery, name='video_gallery'),
     path('404/', views.error_404, name='error_404'),
     path('submit-appointment/', views.appointment_submit, name='appointment_submit'),
+     path('submit-appointment/', views.contact_submit, name='contact_submit'),
 ]
 
 from django.conf import settings
