@@ -22,7 +22,7 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.fname} {self.lname} - {self.services}"
 
-class contact(models.Model):
+class Contact(models.Model):
     fname = models.CharField(max_length=100)
     lname = models.CharField(max_length=100)
     phone = models.CharField(max_length=15)

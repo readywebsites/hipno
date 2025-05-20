@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Appointment, contact
+from .models import Appointment, Contact
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from datetime import date
@@ -61,7 +61,7 @@ def contact_submit(request):
         date = request.POST.get("date")
 
         # Save form data
-        contact_obj = contact.objects.create(
+        contact_obj = Contact.objects.create(
             fname=fname,
             lname=lname,
             email=email,
