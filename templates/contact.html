@@ -444,7 +444,7 @@
         </div>
      </footer>
     <!-- Footer End -->
-    <script>
+   <script>
   function showPopup() {
     const popupOverlay = document.getElementById("popupOverlay");
     popupOverlay.style.display = "flex";
@@ -461,33 +461,40 @@
       event.preventDefault();
       const formData = new FormData(form);
 
-    const statusBox = document.getElementById("status");
-    statusBox.innerText = "Submitting...";
-    statusBox.style.color = "blue";
+      const statusBox = document.getElementById("status");
+      statusBox.innerText = "Submitting...";
+      statusBox.style.color = "blue";
 
-    fetch("/submit-appointment/", {
+      // ✅ Show popup immediately
+      showPopup();
+
+      fetch("/submit-appointment/", {
         method: "POST",
         body: formData,
         headers: {
-            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
         }
-    })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            form.reset();
-            showPopup();
-          } else {
-            alert("Something went wrong!");
-          }
-        })
-        .catch((error) => {
-          alert("Server error occurred.");
-          console.error(error);
-        });
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          form.reset();
+          statusBox.innerText = "Submitted successfully!";
+          statusBox.style.color = "green";
+        } else {
+          statusBox.innerText = "Submission failed.";
+          statusBox.style.color = "red";
+        }
+      })
+      .catch((error) => {
+        statusBox.innerText = "Server error occurred.";
+        statusBox.style.color = "red";
+        console.error(error);
+      });
     });
   });
 </script>
+
 
     <!-- Jquery Library File -->
     <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
