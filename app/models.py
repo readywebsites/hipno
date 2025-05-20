@@ -22,9 +22,6 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.fname} {self.lname} - {self.services}"
 
-# models.py
-from django.db import models
-
 class contact(models.Model):
     fname = models.CharField(max_length=100)
     lname = models.CharField(max_length=100)
