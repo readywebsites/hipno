@@ -447,25 +447,30 @@
    <script>
   function showPopup() {
     const popupOverlay = document.getElementById("popupOverlay");
-    popupOverlay.style.display = "flex";
-    setTimeout(closePopup, 3000);
+    if (popupOverlay) {
+      popupOverlay.style.display = "flex";
+      setTimeout(closePopup, 3000);
+    }
   }
 
   function closePopup() {
-    document.getElementById("popupOverlay").style.display = "none";
+    const popupOverlay = document.getElementById("popupOverlay");
+    if (popupOverlay) {
+      popupOverlay.style.display = "none";
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("contactForm");
+
+    if (!form) return;
+
     form.addEventListener("submit", function (event) {
       event.preventDefault();
+
       const formData = new FormData(form);
 
-      const statusBox = document.getElementById("status");
-      statusBox.innerText = "Submitting...";
-      statusBox.style.color = "blue";
-
-      // ✅ Show popup immediately
+      // Show popup immediately
       showPopup();
 
       fetch("/submit-appointment/", {
@@ -479,21 +484,19 @@
       .then((data) => {
         if (data.success) {
           form.reset();
-          statusBox.innerText = "Submitted successfully!";
-          statusBox.style.color = "green";
+          // Optionally update UI or status if needed
         } else {
-          statusBox.innerText = "Submission failed.";
-          statusBox.style.color = "red";
+          alert("Submission failed. Please try again.");
         }
       })
       .catch((error) => {
-        statusBox.innerText = "Server error occurred.";
-        statusBox.style.color = "red";
+        alert("Server error occurred.");
         console.error(error);
       });
     });
   });
 </script>
+
 
 
     <!-- Jquery Library File -->
