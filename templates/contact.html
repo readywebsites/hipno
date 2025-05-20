@@ -444,7 +444,7 @@
         </div>
      </footer>
     <!-- Footer End -->
-   <script>
+  <script>
   function showPopup() {
     const popupOverlay = document.getElementById("popupOverlay");
     popupOverlay.style.display = "flex";
@@ -457,15 +457,24 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("contactForm");
+    const statusBox = document.getElementById("status");
 
     form.addEventListener("submit", function (event) {
       event.preventDefault();
+      
+      // Validate form fields before submission
+      if (!form.checkValidity()) {
+        // If form is invalid, show error messages
+        form.reportValidity();
+        return;
+      }
+
       const formData = new FormData(form);
 
-      const statusBox = document.getElementById("status");
       if (statusBox) {
         statusBox.innerText = "Submitting...";
         statusBox.style.color = "blue";
+        statusBox.style.display = "block"; // Ensure status box is visible
       }
 
       fetch("/submit-appointment/", {
@@ -475,29 +484,32 @@
           "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
         }
       })
-      .then((res) => res.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data.success) {
           form.reset();
-          showPopup(); // ✅ Popup only on success
-
           if (statusBox) {
-            statusBox.innerText = "Submitted successfully!";
-            statusBox.style.color = "green";
+            statusBox.style.display = "none"; // Hide status box on success
           }
+          showPopup(); // Show popup only on success
         } else {
           if (statusBox) {
-            statusBox.innerText = "Submission failed.";
+            statusBox.innerText = data.message || "Submission failed.";
             statusBox.style.color = "red";
           }
         }
       })
       .catch((error) => {
+        console.error("Error:", error);
         if (statusBox) {
-          statusBox.innerText = "Server error occurred.";
+          statusBox.innerText = "Server error occurred. Please try again.";
           statusBox.style.color = "red";
         }
-        console.error("Server error:", error);
       });
     });
   });
