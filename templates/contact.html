@@ -444,7 +444,7 @@
         </div>
      </footer>
     <!-- Footer End -->
- <script>
+<script>
   // Function to show popup
   function showPopup() {
     const popupOverlay = document.getElementById("popupOverlay");
@@ -462,85 +462,84 @@
     }
   }
 
-  // When DOM is fully loaded
   document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("contactForm");
     const statusBox = document.getElementById("status");
 
     if (form) {
-      form.addEventListener("submit", function(event) {
+      form.addEventListener("submit", async function(event) {
         event.preventDefault();
         
-        // Basic form validation
+        // Clear previous errors
+        if (statusBox) {
+          statusBox.style.display = "none";
+          statusBox.innerHTML = "";
+        }
+
+        // Validate form
         const requiredFields = form.querySelectorAll('[required]');
         let isValid = true;
         
         requiredFields.forEach(field => {
           if (!field.value.trim()) {
             isValid = false;
-            field.style.borderColor = "red";
+            field.style.border = "1px solid red";
           } else {
-            field.style.borderColor = "";
+            field.style.border = "";
           }
         });
 
         if (!isValid) {
           if (statusBox) {
-            statusBox.innerText = "Please fill all required fields";
+            statusBox.innerHTML = "Please fill all required fields";
             statusBox.style.color = "red";
             statusBox.style.display = "block";
           }
           return;
         }
 
-        // Prepare form data
-        const formData = new FormData(form);
-        
         // Show submitting status
         if (statusBox) {
-          statusBox.innerText = "Submitting...";
+          statusBox.innerHTML = "Submitting... <i class='fa fa-spinner fa-spin'></i>";
           statusBox.style.color = "blue";
           statusBox.style.display = "block";
         }
 
-        // Submit form via AJAX
-        fetch("/submit-appointment/", {
-          method: "POST",
-          body: formData,
-          headers: {
-            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-          }
-        })
-        .then(response => {
+        try {
+          const formData = new FormData(form);
+          
+          // Changed endpoint to match your URL pattern
+          const response = await fetch("/submit-contact/", {
+            method: "POST",
+            body: formData,
+            headers: {
+              "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+          });
+
+          const data = await response.json();
+
           if (!response.ok) {
-            throw new Error("Network response was not ok");
+            throw new Error(data.message || "Server responded with error");
           }
-          return response.json();
-        })
-        .then(data => {
+
           if (data.success) {
             form.reset();
-            showPopup(); // Show success popup
-            
-            // Hide status box on success
+            showPopup();
             if (statusBox) {
               statusBox.style.display = "none";
             }
           } else {
-            // Show server error message
-            if (statusBox) {
-              statusBox.innerText = data.message || "Submission failed. Please try again.";
-              statusBox.style.color = "red";
-            }
+            throw new Error(data.message || "Submission failed");
           }
-        })
-        .catch(error => {
-          console.error("Error:", error);
+        } catch (error) {
+          console.error("Submission error:", error);
           if (statusBox) {
-            statusBox.innerText = "Error submitting form. Please try again.";
+            statusBox.innerHTML = error.message || "Error submitting form. Please try again.";
             statusBox.style.color = "red";
+            statusBox.style.display = "block";
           }
-        });
+        }
       });
     }
   });
