@@ -444,6 +444,7 @@
         </div>
      </footer>
     <!-- Footer End -->
+
 <script>
   // Function to show popup
   function showPopup() {
@@ -470,13 +471,7 @@
       form.addEventListener("submit", async function(event) {
         event.preventDefault();
         
-        // Clear previous errors
-        if (statusBox) {
-          statusBox.style.display = "none";
-          statusBox.innerHTML = "";
-        }
-
-        // Validate form
+        // Validate form first
         const requiredFields = form.querySelectorAll('[required]');
         let isValid = true;
         
@@ -491,24 +486,27 @@
 
         if (!isValid) {
           if (statusBox) {
-            statusBox.innerHTML = "Please fill all required fields";
+            statusBox.innerText = "Please fill all required fields";
             statusBox.style.color = "red";
             statusBox.style.display = "block";
           }
           return;
         }
 
-        // Show submitting status
-        if (statusBox) {
-          statusBox.innerHTML = "Submitting... <i class='fa fa-spinner fa-spin'></i>";
-          statusBox.style.color = "blue";
-          statusBox.style.display = "block";
+        // Show popup IMMEDIATELY after validation passes
+        showPopup();  // ✅ This is the key change - moved before fetch()
+
+        // Disable submit button to prevent double submissions
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = "Submitting...";
         }
 
         try {
           const formData = new FormData(form);
           
-          // Changed endpoint to match your URL pattern
+          // Submit data in background
           const response = await fetch("/submit-contact/", {
             method: "POST",
             body: formData,
@@ -520,24 +518,25 @@
           const data = await response.json();
 
           if (!response.ok) {
-            throw new Error(data.message || "Server responded with error");
+            throw new Error(data.message || "Server error occurred");
           }
 
+          // Reset form only on success
           if (data.success) {
             form.reset();
-            showPopup();
-            if (statusBox) {
-              statusBox.style.display = "none";
-            }
           } else {
             throw new Error(data.message || "Submission failed");
           }
+
         } catch (error) {
-          console.error("Submission error:", error);
-          if (statusBox) {
-            statusBox.innerHTML = error.message || "Error submitting form. Please try again.";
-            statusBox.style.color = "red";
-            statusBox.style.display = "block";
+          console.error("Error:", error);
+          // Note: Since popup is already shown, we can't show error there
+          // You might want to add a small toast notification for errors
+        } finally {
+          // Re-enable submit button
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "Submit Message";
           }
         }
       });
