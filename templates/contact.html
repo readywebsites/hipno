@@ -447,31 +447,26 @@
    <script>
   function showPopup() {
     const popupOverlay = document.getElementById("popupOverlay");
-    if (popupOverlay) {
-      popupOverlay.style.display = "flex";
-      setTimeout(closePopup, 3000);
-    }
+    popupOverlay.style.display = "flex";
+    setTimeout(closePopup, 3000);
   }
 
   function closePopup() {
-    const popupOverlay = document.getElementById("popupOverlay");
-    if (popupOverlay) {
-      popupOverlay.style.display = "none";
-    }
+    document.getElementById("popupOverlay").style.display = "none";
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("contactForm");
 
-    if (!form) return;
-
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-
       const formData = new FormData(form);
 
-      // Show popup immediately
-      showPopup();
+      const statusBox = document.getElementById("status");
+      if (statusBox) {
+        statusBox.innerText = "Submitting...";
+        statusBox.style.color = "blue";
+      }
 
       fetch("/submit-appointment/", {
         method: "POST",
@@ -484,18 +479,30 @@
       .then((data) => {
         if (data.success) {
           form.reset();
-          // Optionally update UI or status if needed
+          showPopup(); // ✅ Popup only on success
+
+          if (statusBox) {
+            statusBox.innerText = "Submitted successfully!";
+            statusBox.style.color = "green";
+          }
         } else {
-          alert("Submission failed. Please try again.");
+          if (statusBox) {
+            statusBox.innerText = "Submission failed.";
+            statusBox.style.color = "red";
+          }
         }
       })
       .catch((error) => {
-        alert("Server error occurred.");
-        console.error(error);
+        if (statusBox) {
+          statusBox.innerText = "Server error occurred.";
+          statusBox.style.color = "red";
+        }
+        console.error("Server error:", error);
       });
     });
   });
 </script>
+
 
 
 
