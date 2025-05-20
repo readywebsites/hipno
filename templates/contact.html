@@ -444,74 +444,105 @@
         </div>
      </footer>
     <!-- Footer End -->
-  <script>
+ <script>
+  // Function to show popup
   function showPopup() {
     const popupOverlay = document.getElementById("popupOverlay");
-    popupOverlay.style.display = "flex";
-    setTimeout(closePopup, 3000);
+    if (popupOverlay) {
+      popupOverlay.style.display = "flex";
+      setTimeout(closePopup, 3000);
+    }
   }
 
+  // Function to close popup
   function closePopup() {
-    document.getElementById("popupOverlay").style.display = "none";
+    const popupOverlay = document.getElementById("popupOverlay");
+    if (popupOverlay) {
+      popupOverlay.style.display = "none";
+    }
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
+  // When DOM is fully loaded
+  document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("contactForm");
     const statusBox = document.getElementById("status");
 
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-      
-      // Validate form fields before submission
-      if (!form.checkValidity()) {
-        // If form is invalid, show error messages
-        form.reportValidity();
-        return;
-      }
-
-      const formData = new FormData(form);
-
-      if (statusBox) {
-        statusBox.innerText = "Submitting...";
-        statusBox.style.color = "blue";
-        statusBox.style.display = "block"; // Ensure status box is visible
-      }
-
-      fetch("/submit-appointment/", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
-      })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data.success) {
-          form.reset();
-          if (statusBox) {
-            statusBox.style.display = "none"; // Hide status box on success
+    if (form) {
+      form.addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        // Basic form validation
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+          if (!field.value.trim()) {
+            isValid = false;
+            field.style.borderColor = "red";
+          } else {
+            field.style.borderColor = "";
           }
-          showPopup(); // Show popup only on success
-        } else {
+        });
+
+        if (!isValid) {
           if (statusBox) {
-            statusBox.innerText = data.message || "Submission failed.";
+            statusBox.innerText = "Please fill all required fields";
+            statusBox.style.color = "red";
+            statusBox.style.display = "block";
+          }
+          return;
+        }
+
+        // Prepare form data
+        const formData = new FormData(form);
+        
+        // Show submitting status
+        if (statusBox) {
+          statusBox.innerText = "Submitting...";
+          statusBox.style.color = "blue";
+          statusBox.style.display = "block";
+        }
+
+        // Submit form via AJAX
+        fetch("/submit-appointment/", {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            form.reset();
+            showPopup(); // Show success popup
+            
+            // Hide status box on success
+            if (statusBox) {
+              statusBox.style.display = "none";
+            }
+          } else {
+            // Show server error message
+            if (statusBox) {
+              statusBox.innerText = data.message || "Submission failed. Please try again.";
+              statusBox.style.color = "red";
+            }
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          if (statusBox) {
+            statusBox.innerText = "Error submitting form. Please try again.";
             statusBox.style.color = "red";
           }
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        if (statusBox) {
-          statusBox.innerText = "Server error occurred. Please try again.";
-          statusBox.style.color = "red";
-        }
+        });
       });
-    });
+    }
   });
 </script>
 
