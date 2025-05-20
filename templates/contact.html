@@ -461,10 +461,17 @@
       event.preventDefault();
       const formData = new FormData(form);
 
-      fetch("/submit-contact/", {
+    const statusBox = document.getElementById("status");
+    statusBox.innerText = "Submitting...";
+    statusBox.style.color = "blue";
+
+    fetch("/submit-appointment/", {
         method: "POST",
         body: formData,
-      })
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
