@@ -7,6 +7,8 @@ from datetime import date
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 import random
+from datetime import datetime  # Add this at the top of your views.py
+from django.conf import settings
 
 def resend_otp(request):
     if 'otp' in request.session:
@@ -23,7 +25,7 @@ def send_otp(request):
     send_mail(
         'Your OTP for verification',
         f'Your OTP is: {otp}',
-        DEFAULT_FROM_EMAIL,
+        settings.DEFAULT_FROM_EMAIL,
         [request.user.email],
         fail_silently=False,
     )

@@ -85,7 +85,7 @@ ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/verify-otp/'
 ACCOUNT_ADAPTER = 'app.adapters.CustomAccountAdapter'
 # Redirect URLs after login/logout
 LOGIN_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/index'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
