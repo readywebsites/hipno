@@ -76,11 +76,13 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 # Email verification mandatory
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # "none", "optional", or "mandatory"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False  # username optional if you want
-ACCOUNT_AUTHENTICATION_METHOD = 'email'  # login via email only
-
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/verify-otp/' 
+ACCOUNT_ADAPTER = 'app.adapters.CustomAccountAdapter'
 # Redirect URLs after login/logout
 LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
@@ -176,3 +178,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # settings.py
 
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}

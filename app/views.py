@@ -6,6 +6,29 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import date
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
+import random
+
+def resend_otp(request):
+    if 'otp' in request.session:
+        del request.session['otp']
+    return redirect('send_otp')
+
+def send_otp(request):
+    # Generate a random 6-digit OTP
+    otp = random.randint(100000, 999999)
+    request.session['otp'] = str(otp)
+    request.session['otp_created_time'] = str(datetime.now())
+    
+    # Send email with the OTP
+    send_mail(
+        'Your OTP for verification',
+        f'Your OTP is: {otp}',
+        DEFAULT_FROM_EMAIL,
+        [request.user.email],
+        fail_silently=False,
+    )
+    messages.info(request, 'OTP sent to your email!')
+    return redirect('verify_otp')
 
 def forgot_password(request):
     return render(request, 'forgot_password.html')
@@ -14,16 +37,23 @@ def verify_otp(request):
     if request.method == "POST":
         user_otp = request.POST.get("otp")
         session_otp = request.session.get("otp")
-        user_type = request.session.get("user_type")  # doctor or patient
-
+        
+        if not session_otp:
+            messages.error(request, "OTP expired or not generated. Please request a new OTP.")
+            return redirect('account_email_verification_sent')
+            
         if user_otp == session_otp:
-            if user_type == 'doctor':
+            # Check if user is doctor or patient (you need to set this during registration)
+            if hasattr(request.user, 'doctorprofile'):
                 return redirect('doctor_detail')
-            else:
+            elif hasattr(request.user, 'patientprofile'):
                 return redirect('patient_detail')
+            else:
+                # Handle case where user type isn't set
+                return redirect('account_login')
         else:
             messages.error(request, "Invalid OTP. Please try again.")
-            return render(request, 'verify_otp.html')
+    
     return render(request, 'verify_otp.html')
 
 def doctor_detail(request):
