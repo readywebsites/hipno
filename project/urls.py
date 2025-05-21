@@ -51,7 +51,8 @@ urlpatterns = [
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('doctor-detail/', views.doctor_detail, name='doctor_detail'),
     path('patient-detail/', views.patient_detail, name='patient_detail'),
-
+     path('resend-otp/', views.resend_otp, name='resend_otp'),
+    path('send-otp/', views.send_otp, name='send_otp'),
 ]
 
 from django.conf import settings
