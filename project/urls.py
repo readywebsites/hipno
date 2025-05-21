@@ -14,12 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path, include
 from app import views
 from django.contrib import admin
 
 urlpatterns = [
     path('admin/', admin.site.urls), 
+    path('accounts/', include('allauth.urls')),
     path('', views.index, name='index'),
     path('about/', views.about, name='about'),
     path('blog/', views.blog, name='blog'),
@@ -41,7 +42,16 @@ urlpatterns = [
     path('video-gallery/', views.video_gallery, name='video_gallery'),
     path('404/', views.error_404, name='error_404'),
     path('submit-appointment/', views.appointment_submit, name='appointment_submit'),
-     path('submit-contact/', views.contact_submit, name='contact_submit'),
+    path('submit-contact/', views.contact_submit, name='contact_submit'),
+    path('signup/doctor/', views.signup_doctor, name='signup_doctor'),
+    path('signup/patient/', views.signup_patient, name='signup_patient'),
+    path('signin/doctor/', views.signin_doctor, name='signin_doctor'),
+    path('signin/patient/', views.signin_patient, name='signin_patient'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('doctor-detail/', views.doctor_detail, name='doctor_detail'),
+    path('patient-detail/', views.patient_detail, name='patient_detail'),
+
 ]
 
 from django.conf import settings

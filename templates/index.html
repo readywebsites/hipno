@@ -32,6 +32,7 @@
 	<link rel="stylesheet" href="{% static 'assets/css/mousecursor.css' %}">
 	<!-- Main Custom Css -->
 	<link href="{% static 'assets/css/custom.css' %}" rel="stylesheet" media="screen">
+
 </head>
 <body>
 
@@ -68,25 +69,25 @@
                 </ul>
             </li>                                
             <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About Us</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'services' %}">Services</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'blog' %}">Blog</a></li>
-            <li class="nav-item submenu">
-                <a class="nav-link" href="#">Pages</a>
-                <ul>                                        
-                    <li class="nav-item"><a class="nav-link" href="{% url 'service_single' %}">Service Details</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'blog_single' %}">Blog Details</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'case_study' %}">Case Study</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'case_study_single' %}">Case Study Details</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'team' %}">Our Team</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'team_single' %}">Team Details</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'pricing' %}">Pricing Plan</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'testimonial' %}">Testimonials</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'image_gallery' %}">Image Gallery</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'video_gallery' %}">Video Gallery</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'faqs' %}">FAQs</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'error_404' %}">404</a></li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="signupDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Sign Up
+                </a>
+                 <ul>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'signup_doctor' %}">As Doctor</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'signup_patient' %}">As Patient</a></li>
                 </ul>
             </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="signinDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Sign In
+                </a>
+                <ul>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'signin_doctor' %}">As Doctor</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'signin_patient' %}">As Patient</a></li>
+                </ul>
+            </li>
+
             <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact Us</a></li>
             <li class="nav-item highlighted-menu"><a class="nav-link" href="{% url 'book_appointment' %}">Book Appointment</a></li>                           
         </ul>
@@ -1604,6 +1605,8 @@
         </div>
      </footer>
     <!-- Footer End -->
+     <!-- Popper.js (required for Bootstrap dropdown) -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 
     <!-- Jquery Library File -->
     <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>

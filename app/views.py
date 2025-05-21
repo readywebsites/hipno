@@ -1,9 +1,170 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from .models import Appointment, Contact
+from .models import Appointment, Contact, DoctorProfile, PatientProfile
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from datetime import date
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+
+def forgot_password(request):
+    return render(request, 'forgot_password.html')
+
+def verify_otp(request):
+    if request.method == "POST":
+        user_otp = request.POST.get("otp")
+        session_otp = request.session.get("otp")
+        user_type = request.session.get("user_type")  # doctor or patient
+
+        if user_otp == session_otp:
+            if user_type == 'doctor':
+                return redirect('doctor_detail')
+            else:
+                return redirect('patient_detail')
+        else:
+            messages.error(request, "Invalid OTP. Please try again.")
+            return render(request, 'verify_otp.html')
+    return render(request, 'verify_otp.html')
+
+def doctor_detail(request):
+    if request.method == "POST":
+        DoctorProfile.objects.create(
+            user=request.user,
+            full_name=request.POST['full_name'],
+            email=request.POST['email'],
+            phone_number=request.POST['phone_number'],
+            specialization=request.POST['specialization'],
+            license_number=request.POST['license_number'],
+            experience=request.POST.get('experience'),
+            clinic_address=request.POST.get('clinic_address'),
+            education=request.POST.get('education'),
+            availability=request.POST.get('availability'),
+            consultation_fee=request.POST.get('consultation_fee'),
+            bio=request.POST.get('bio'),
+        )
+        return redirect('success')  # or dashboard
+
+    return render(request, 'signup/doctor_details.html')
+
+
+def patient_detail(request):
+    if request.method == "POST":
+        PatientProfile.objects.create(
+            user=request.user,
+            name=request.POST['name'],
+            email=request.POST['email'],
+            phone_number=request.POST['phonenumber'],
+            dob=request.POST.get('dob'),
+            emergency_contact=request.POST.get('emergency_contact'),
+            gender=request.POST.get('gender'),
+            age=request.POST.get('age'),
+            reason_concerns=request.POST.get('reason_concerns'),
+            concern_duration=request.POST.get('concern_duration'),
+            reason_now=request.POST.get('reason_now'),
+            past_therapy=request.POST.get('past_therapy'),
+            therapy_reason=request.POST.get('therapy_reason'),
+            past_diagnosis=request.POST.get('past_diagnosis'),
+            hospitalization=request.POST.get('hospitalization'),
+            current_medication=request.POST.get('current_medication'),
+            medication_list=request.POST.get('medication_list'),
+            medical_conditions=request.POST.get('medical_conditions'),
+            surgeries=request.POST.get('surgeries'),
+            substance_use=request.POST.get('substance_use'),
+            family_history=request.POST.get('family_history'),
+            living_with=request.POST.get('living_with'),
+            support_system=request.POST.get('support_system'),
+            sleep=request.POST.get('sleep'),
+            appetite=request.POST.get('appetite'),
+            energy_concentration=request.POST.get('energy_concentration'),
+            life_changes=request.POST.get('life_changes'),
+            self_harm_thoughts=request.POST.get('self_harm_thoughts'),
+            suicide_attempts=request.POST.get('suicide_attempts'),
+            environment_safety=request.POST.get('environment_safety'),
+            therapy_goals=request.POST.get('therapy_goals'),
+            consent_acknowledged=request.POST.get('consent_acknowledged'),
+        )
+        return redirect('success')  # or dashboard
+
+    return render(request, 'signup/patient_details.html')
+
+
+# -------------------- SIGNUP DOCTOR --------------------
+def signup_doctor(request):
+    if request.method == 'POST':
+        verification_method = request.POST.get('verification_method')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
+        if verification_method == 'email' and email:
+            send_mail(
+                subject='Doctor OTP',
+                message='Your OTP is 654321',
+                from_email='your@email.com',
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return render(request, 'signup/verify_otp.html', {'email': email})
+
+        elif verification_method == 'phone' and phone:
+            print(f"Doctor OTP sent to: {phone}")
+            return render(request, 'signup/verify_otp.html', {'phone': phone})
+
+    return render(request, 'signup/doctor.html')
+
+
+# -------------------- SIGNUP PATIENT --------------------
+def signup_patient(request):
+    if request.method == 'POST':
+        verification_method = request.POST.get('verification_method')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
+        if verification_method == 'email' and email:
+            send_mail(
+                subject='Patient OTP',
+                message='Your OTP is 123456',
+                from_email='your@email.com',
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return render(request, 'signup/verify_otp.html', {'email': email})
+
+        elif verification_method == 'phone' and phone:
+            print(f"Patient OTP sent to: {phone}")
+            return render(request, 'signup/verify_otp.html', {'phone': phone})
+
+    return render(request, 'signup/patient.html')
+
+
+# -------------------- SIGNIN DOCTOR --------------------
+def signin_doctor(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect('home')
+        else:
+            return render(request, 'signin/doctor.html', {'error': 'Invalid credentials'})
+    
+    return render(request, 'signin/doctor.html')
+
+
+# -------------------- SIGNIN PATIENT --------------------
+def signin_patient(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect('home')
+        else:
+            return render(request, 'signin/patient.html', {'error': 'Invalid credentials'})
+    
+    return render(request, 'signin/patient.html')
+
 
 def book_appointment_view(request):
     today = date.today().isoformat()
