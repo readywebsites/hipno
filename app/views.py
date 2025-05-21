@@ -45,18 +45,20 @@ def verify_otp(request):
             return redirect('account_email_verification_sent')
             
         if user_otp == session_otp:
-            # Check if user is doctor or patient (you need to set this during registration)
-            if hasattr(request.user, 'doctorprofile'):
+            # Check user type from session (set during signup)
+            user_type = request.session.get('user_type')
+            
+            if user_type == 'doctor':
                 return redirect('doctor_detail')
-            elif hasattr(request.user, 'patientprofile'):
+            elif user_type == 'patient':
                 return redirect('patient_detail')
             else:
-                # Handle case where user type isn't set
+                # Fallback if user_type not set
                 return redirect('account_login')
         else:
             messages.error(request, "Invalid OTP. Please try again.")
     
-    return render(request, 'verify_otp.html')
+    return render(request, 'signup/verify_otp.html')
 
 def doctor_detail(request):
     if request.method == "POST":
@@ -127,48 +129,65 @@ def signup_doctor(request):
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
+        request.session['user_type'] = 'doctor'
+
         if verification_method == 'email' and email:
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['email'] = email
+
             send_mail(
                 subject='Doctor OTP',
-                message='Your OTP is 654321',
-                from_email='your@email.com',
+                message=f'Your OTP is {otp}',
+                from_email='fatemadhalech16@gmail.com',  # change to your .env value
                 recipient_list=[email],
                 fail_silently=False,
             )
             return render(request, 'signup/verify_otp.html', {'email': email})
 
         elif verification_method == 'phone' and phone:
-            print(f"Doctor OTP sent to: {phone}")
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['phone'] = phone
+            print(f"Doctor OTP sent to {phone}: {otp}")
             return render(request, 'signup/verify_otp.html', {'phone': phone})
 
     return render(request, 'signup/doctor.html')
 
-
-# -------------------- SIGNUP PATIENT --------------------
 def signup_patient(request):
     if request.method == 'POST':
         verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
+        request.session['user_type'] = 'patient'
+
         if verification_method == 'email' and email:
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['email'] = email
+
             send_mail(
                 subject='Patient OTP',
-                message='Your OTP is 123456',
-                from_email='your@email.com',
+                message=f'Your OTP is {otp}',
+                from_email='fatemadhalech16@gmail.com',  # use your email
                 recipient_list=[email],
                 fail_silently=False,
             )
             return render(request, 'signup/verify_otp.html', {'email': email})
 
         elif verification_method == 'phone' and phone:
-            print(f"Patient OTP sent to: {phone}")
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['phone'] = phone
+            print(f"Patient OTP sent to {phone}: {otp}")
             return render(request, 'signup/verify_otp.html', {'phone': phone})
 
     return render(request, 'signup/patient.html')
 
 
 # -------------------- SIGNIN DOCTOR --------------------
+
 def signin_doctor(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -181,6 +200,7 @@ def signin_doctor(request):
             return render(request, 'signin/doctor.html', {'error': 'Invalid credentials'})
     
     return render(request, 'signin/doctor.html')
+
 
 
 # -------------------- SIGNIN PATIENT --------------------

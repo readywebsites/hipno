@@ -82,10 +82,9 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/verify-otp/' 
+LOGIN_REDIRECT_URL = '/signup'  # After successful login
+ACCOUNT_LOGOUT_REDIRECT_URL = '/index'  # After logout
 ACCOUNT_ADAPTER = 'app.adapters.CustomAccountAdapter'
-# Redirect URLs after login/logout
-LOGIN_REDIRECT_URL = '/signup/doctor_details'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/index'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
