@@ -84,7 +84,7 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/verify-otp/' 
 ACCOUNT_ADAPTER = 'app.adapters.CustomAccountAdapter'
 # Redirect URLs after login/logout
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/signup/doctor_details'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/index'
 
 MIDDLEWARE = [
