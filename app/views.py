@@ -41,26 +41,43 @@ def verify_otp(request):
     if request.method == "POST":
         user_otp = request.POST.get("otp")
         session_otp = request.session.get("otp")
-        
+
         if not session_otp:
-            messages.error(request, "OTP expired or not generated. Please request a new OTP.")
+            messages.error(request, "OTP expired. Please try again.")
             return redirect('account_email_verification_sent')
-            
+
         if user_otp == session_otp:
-            # Check user type from session (set during signup)
-            user_type = request.session.get('user_type')
-            
-            if user_type == 'doctor':
-                 return render(request, 'signup/doctor_details.html')
-            elif user_type == 'patient':
-                 return render(request, 'signup/patient_details.html')
-            else:
-                # Fallback if user_type not set
-                return redirect('account_login')
+            # OTP verified successfully
+            return redirect('create_password')
         else:
-            messages.error(request, "Invalid OTP. Please try again.")
-    
+            messages.error(request, "Invalid OTP. Try again.")
+
     return render(request, 'signup/verify_otp.html')
+
+def create_password(request):
+    if request.method == "POST":
+        password = request.POST.get("password")
+        email = request.session.get("email")
+        user_type = request.session.get("user_type")
+
+        if email and password:
+            if User.objects.filter(username=email).exists():
+                messages.error(request, "User already exists.")
+                return redirect('account_login')
+
+            # Create user
+            user = User.objects.create_user(username=email, email=email, password=password)
+            login(request, user)
+
+            # Redirect based on user_type
+            if user_type == 'doctor':
+                return redirect('doctor_detail')
+            elif user_type == 'patient':
+                return redirect('patient_detail')
+            else:
+                return redirect('account_login')
+
+    return render(request, 'signup/create_password.html')
 
 def doctor_detail(request):
     if request.method == "POST":
@@ -130,7 +147,8 @@ def signup_doctor(request):
         verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
-
+        
+        request.session['email'] = email
         request.session['user_type'] = 'doctor'
 
         if verification_method == 'email' and email:
