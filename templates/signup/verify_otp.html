@@ -20,7 +20,7 @@
                             {% endfor %}
                         {% endif %}
                         
-                        <form method="POST" action=".">
+                        <form method="POST" action="{% url 'verify_otp' %}">
                             {% csrf_token %}
                             <div class="mb-3">
                                 <label for="otp" class="form-label">OTP</label>
