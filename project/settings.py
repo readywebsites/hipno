@@ -82,7 +82,7 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/verify-otp/' 
-LOGIN_REDIRECT_URL = '/signup'  # After successful login
+LOGIN_REDIRECT_URL = '/signup/doctor_details'  # After successful login
 ACCOUNT_LOGOUT_REDIRECT_URL = '/index'  # After logout
 ACCOUNT_ADAPTER = 'app.adapters.CustomAccountAdapter'
 
