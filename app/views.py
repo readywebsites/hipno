@@ -83,6 +83,7 @@ def create_password(request):
             return redirect('account_signup')
 
     return render(request, 'signup/create_password.html')
+
 def doctor_detail(request):
     if request.method == "POST":
         DoctorProfile.objects.create(
@@ -101,7 +102,7 @@ def doctor_detail(request):
         )
         return redirect('success')  # or dashboard
 
-    return render(request, 'signup/doctor_details.html')
+    return render(request, 'signup/doctor_detail.html')
 
 
 def patient_detail(request):
