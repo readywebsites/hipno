@@ -69,7 +69,7 @@ def verify_otp(request):
         else:
             messages.error(request, "Invalid OTP. Please try again.")
     
-    return render(request, 'signup/verify_otp.html')
+    return render(request, 'signup/doctor_details.html')
 def doctor_detail(request):
     if request.method == "POST":
         DoctorProfile.objects.create(
