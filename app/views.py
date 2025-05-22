@@ -51,9 +51,9 @@ def verify_otp(request):
             user_type = request.session.get('user_type')
             
             if user_type == 'doctor':
-                return redirect('doctor_details')
+                 return render(request, 'signup/doctor_details.html')
             elif user_type == 'patient':
-                return redirect('patient_details')
+                 return render(request, 'signup/patient_details.html')
             else:
                 # Fallback if user_type not set
                 return redirect('account_login')
