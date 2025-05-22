@@ -9,6 +9,7 @@ from django.contrib import messages
 import random
 from datetime import datetime  # Add this at the top of your views.py
 from django.conf import settings
+from django.contrib.auth.models import User
 
 def resend_otp(request):
     if 'otp' in request.session:
@@ -31,9 +32,11 @@ def send_otp(request):
     )
     messages.info(request, 'OTP sent to your email!')
     return redirect('verify_otp')
+  
 
 def forgot_password(request):
     return render(request, 'forgot_password.html')
+
 
 def verify_otp(request):
     if request.method == "POST":
@@ -45,21 +48,28 @@ def verify_otp(request):
             return redirect('account_email_verification_sent')
             
         if user_otp == session_otp:
-            # Check user type from session (set during signup)
+            # ✅ Create and login the user if not already logged in
+            email = request.session.get('email')  # Make sure to set this during signup
+            if not request.user.is_authenticated:
+                user, created = User.objects.get_or_create(
+                    email=email,
+                    defaults={'username': email, 'password': 'temporary-password'}
+                )
+                login(request, user)
+                request.user = user
+
+            # Redirect based on user type
             user_type = request.session.get('user_type')
-            
             if user_type == 'doctor':
                 return redirect('doctor_detail')
             elif user_type == 'patient':
                 return redirect('patient_detail')
             else:
-                # Fallback if user_type not set
                 return redirect('account_login')
         else:
             messages.error(request, "Invalid OTP. Please try again.")
     
     return render(request, 'signup/verify_otp.html')
-
 def doctor_detail(request):
     if request.method == "POST":
         DoctorProfile.objects.create(
