@@ -143,7 +143,7 @@ def patient_detail(request):
         )
         return redirect('success')  # or dashboard
 
-    return render(request, 'signup/patient_details.html')
+    return render(request, 'signup/patient_detail.html')
 
 
 # -------------------- SIGNUP DOCTOR --------------------
