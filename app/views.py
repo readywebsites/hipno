@@ -67,6 +67,8 @@ def create_password(request):
 
             # Create user
             user = User.objects.create_user(username=email, email=email, password=password)
+
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
 
             # Redirect based on user_type
@@ -147,7 +149,7 @@ def signup_doctor(request):
         verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
-        
+
         request.session['email'] = email
         request.session['user_type'] = 'doctor'
 
