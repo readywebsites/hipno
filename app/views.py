@@ -65,13 +65,12 @@ def create_password(request):
                 messages.error(request, "User already exists.")
                 return redirect('account_login')
 
-            # Create user
+            # Create and login user
             user = User.objects.create_user(username=email, email=email, password=password)
-
-            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            user.backend = 'django.contrib.auth.backends.ModelBackend'  # Required due to multiple backends
             login(request, user)
 
-            # Redirect based on user_type
+            # Redirect based on user type
             if user_type == 'doctor':
                 return redirect('doctor_detail')
             elif user_type == 'patient':
@@ -79,8 +78,11 @@ def create_password(request):
             else:
                 return redirect('account_login')
 
-    return render(request, 'signup/create_password.html')
+        else:
+            messages.error(request, "Invalid session data. Try again.")
+            return redirect('account_signup')
 
+    return render(request, 'signup/create_password.html')
 def doctor_detail(request):
     if request.method == "POST":
         DoctorProfile.objects.create(
