@@ -103,7 +103,7 @@ def doctor_detail(request):
             consultation_fee=request.POST.get('consultation_fee'),
             bio=request.POST.get('bio'),
         )
-        return redirect('success')  # or dashboard
+        return redirect('index')  # or dashboard
 
     return render(request, 'signup/doctor_detail.html')
 
