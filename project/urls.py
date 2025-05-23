@@ -56,6 +56,7 @@ urlpatterns = [
     path('create-password/', views.create_password, name='create_password'),
     path('test-doc/', views.test_template),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile, name='profile'),
 ]
 
 from django.conf import settings

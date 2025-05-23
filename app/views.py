@@ -11,6 +11,30 @@ from datetime import datetime  # Add this at the top of your views.py
 from django.conf import settings
 from django.contrib.auth.models import User
 
+def profile(request):
+    if not request.user.is_authenticated:
+        return redirect('signin_patient')
+    
+    try:
+        # Check if user is a doctor
+        profile = DoctorProfile.objects.get(user=request.user)
+        profile_type = 'doctor'
+    except DoctorProfile.DoesNotExist:
+        try:
+            # Check if user is a patient
+            profile = PatientProfile.objects.get(user=request.user)
+            profile_type = 'patient'
+        except PatientProfile.DoesNotExist:
+            # User has no profile (shouldn't happen in normal flow)
+            profile = None
+            profile_type = None
+    
+    context = {
+        'profile': profile,
+        'profile_type': profile_type
+    }
+    return render(request, 'profile.html', context)
+
 def logout_view(request):
     logout(request)
     return redirect('index')
