@@ -7,13 +7,9 @@ from datetime import date
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 import random
-from datetime import datetime
+from datetime import datetime  # Add this at the top of your views.py
 from django.conf import settings
 from django.contrib.auth.models import User
-
-def logout_view(request):
-    logout(request)
-    return redirect('index')
 
 def profile(request):
     if not request.user.is_authenticated:
@@ -34,6 +30,39 @@ def profile(request):
         'profile': profile,
         'profile_type': profile_type
     })
+
+def logout_view(request):
+    logout(request)
+    return redirect('index')
+
+def test_template(request):
+    return render(request, 'signup/doctor_detail.html')
+
+def resend_otp(request):
+    if 'otp' in request.session:
+        del request.session['otp']
+    return redirect('send_otp')
+
+def send_otp(request):
+    # Generate a random 6-digit OTP
+    otp = random.randint(100000, 999999)
+    request.session['otp'] = str(otp)
+    request.session['otp_created_time'] = str(datetime.now())
+    
+    # Send email with the OTP
+    send_mail(
+        'Your OTP for verification',
+        f'Your OTP is: {otp}',
+        settings.DEFAULT_FROM_EMAIL,
+        [request.user.email],
+        fail_silently=False,
+    )
+    messages.info(request, 'OTP sent to your email!')
+    return redirect('verify_otp')
+  
+
+def forgot_password(request):
+    return render(request, 'forgot_password.html')
 
 def verify_otp(request):
     if request.method == "POST":
@@ -143,6 +172,7 @@ def patient_detail(request):
 
     return render(request, 'signup/patient_detail.html')
 
+# -------------------- SIGNUP DOCTOR --------------------
 def signup_doctor(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -193,6 +223,9 @@ def signup_patient(request):
 
     return render(request, 'signup/patient.html')
 
+
+# -------------------- SIGNIN DOCTOR --------------------
+
 def signin_doctor(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -206,6 +239,9 @@ def signin_doctor(request):
     
     return render(request, 'signin/doctor.html')
 
+
+
+# -------------------- SIGNIN PATIENT --------------------
 def signin_patient(request):
     if request.method == 'POST':
         email = request.POST.get('email')
