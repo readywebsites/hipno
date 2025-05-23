@@ -11,6 +11,9 @@ from datetime import datetime  # Add this at the top of your views.py
 from django.conf import settings
 from django.contrib.auth.models import User
 
+def test_template(request):
+    return render(request, 'signup/doctor_detail.html')
+
 def resend_otp(request):
     if 'otp' in request.session:
         del request.session['otp']
