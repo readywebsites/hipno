@@ -155,16 +155,12 @@ def patient_detail(request):
 
 # -------------------- SIGNUP DOCTOR --------------------
 def signup_doctor(request):
-
+    
     if request.method == 'POST':
         verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'User already exists with this email.')
-            return render(request, 'signup/doctor.html')
-            
         request.session['email'] = email
         request.session['user_type'] = 'doctor'
 
