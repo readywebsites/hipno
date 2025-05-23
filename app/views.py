@@ -11,30 +11,6 @@ from datetime import datetime  # Add this at the top of your views.py
 from django.conf import settings
 from django.contrib.auth.models import User
 
-def profile(request):
-    if not request.user.is_authenticated:
-        return redirect('signin_patient')
-    
-    try:
-        # Check if user is a doctor
-        profile = DoctorProfile.objects.get(user=request.user)
-        profile_type = 'doctor'
-    except DoctorProfile.DoesNotExist:
-        try:
-            # Check if user is a patient
-            profile = PatientProfile.objects.get(user=request.user)
-            profile_type = 'patient'
-        except PatientProfile.DoesNotExist:
-            # User has no profile (shouldn't happen in normal flow)
-            profile = None
-            profile_type = None
-    
-    context = {
-        'profile': profile,
-        'profile_type': profile_type
-    }
-    return render(request, 'profile.html', context)
-
 def logout_view(request):
     logout(request)
     return redirect('index')
@@ -179,6 +155,7 @@ def patient_detail(request):
 
 # -------------------- SIGNUP DOCTOR --------------------
 def signup_doctor(request):
+
     if request.method == 'POST':
         verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
@@ -220,10 +197,6 @@ def signup_patient(request):
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'User already exists with this email.')
-            return render(request, 'signup/patient.html')
-
         request.session['user_type'] = 'patient'
 
         if verification_method == 'email' and email:
@@ -259,7 +232,7 @@ def signin_doctor(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('index') 
+            return redirect('home')
         else:
             return render(request, 'signin/doctor.html', {'error': 'Invalid credentials'})
     
@@ -275,7 +248,7 @@ def signin_patient(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('index')
+            return redirect('home')
         else:
             return render(request, 'signin/patient.html', {'error': 'Invalid credentials'})
     
