@@ -47,7 +47,7 @@ def verify_otp(request):
 
         if not session_otp:
             messages.error(request, "OTP expired. Please try again.")
-            return redirect('account_email_verification_sent')
+            return redirect('resend_otp')
 
         if user_otp == session_otp:
             # OTP verified successfully
@@ -75,9 +75,9 @@ def create_password(request):
 
             # Redirect based on user type
             if user_type == 'doctor':
-                return redirect('doctor_detail')
+                return redirect('doctor-detail')
             elif user_type == 'patient':
-                return redirect('patient_detail')
+                return redirect('patient-detail')
             else:
                 return redirect('account_login')
 

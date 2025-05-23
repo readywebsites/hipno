@@ -55,7 +55,6 @@ urlpatterns = [
     path('send-otp/', views.send_otp, name='send_otp'),
     path('create-password/', views.create_password, name='create_password'),
     path('test-doc/', views.test_template),
-
 ]
 
 from django.conf import settings
