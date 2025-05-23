@@ -7,7 +7,7 @@ from datetime import date
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 import random
-from datetime import datetime
+from datetime import datetime  # Add this at the top of your views.py
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -15,25 +15,34 @@ def logout_view(request):
     logout(request)
     return redirect('index')
 
-def profile(request):
-    if not request.user.is_authenticated:
-        return redirect('index')
+def test_template(request):
+    return render(request, 'signup/doctor_detail.html')
+
+def resend_otp(request):
+    if 'otp' in request.session:
+        del request.session['otp']
+    return redirect('send_otp')
+
+def send_otp(request):
+    # Generate a random 6-digit OTP
+    otp = random.randint(100000, 999999)
+    request.session['otp'] = str(otp)
+    request.session['otp_created_time'] = str(datetime.now())
     
-    try:
-        profile = DoctorProfile.objects.get(user=request.user)
-        profile_type = 'doctor'
-    except DoctorProfile.DoesNotExist:
-        try:
-            profile = PatientProfile.objects.get(user=request.user)
-            profile_type = 'patient'
-        except PatientProfile.DoesNotExist:
-            messages.error(request, 'Profile not found')
-            return redirect('index')
-    
-    return render(request, 'profile.html', {
-        'profile': profile,
-        'profile_type': profile_type
-    })
+    # Send email with the OTP
+    send_mail(
+        'Your OTP for verification',
+        f'Your OTP is: {otp}',
+        settings.DEFAULT_FROM_EMAIL,
+        [request.user.email],
+        fail_silently=False,
+    )
+    messages.info(request, 'OTP sent to your email!')
+    return redirect('verify_otp')
+  
+
+def forgot_password(request):
+    return render(request, 'forgot_password.html')
 
 def verify_otp(request):
     if request.method == "POST":
@@ -45,6 +54,7 @@ def verify_otp(request):
             return redirect('resend_otp')
 
         if user_otp == session_otp:
+            # OTP verified successfully
             return redirect('create_password')
         else:
             messages.error(request, "Invalid OTP. Try again.")
@@ -54,33 +64,34 @@ def verify_otp(request):
 def create_password(request):
     if request.method == "POST":
         password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
         email = request.session.get("email")
         user_type = request.session.get("user_type")
 
-        if password != confirm_password:
-            messages.error(request, "Passwords don't match")
-            return render(request, 'signup/create_password.html')
-
         if email and password:
-            if User.objects.filter(email=email).exists():
+            if User.objects.filter(username=email).exists():
                 messages.error(request, "User already exists.")
-                return redirect('signin_patient' if user_type == 'patient' else 'signin_doctor')
+                return redirect('account_login')
 
-            user = User.objects.create_user(
-                username=email,
-                email=email,
-                password=password
-            )
+            # Create and login user
+            user = User.objects.create_user(username=email, email=email, password=password)
+            user.backend = 'django.contrib.auth.backends.ModelBackend'  # Required due to multiple backends
             login(request, user)
-            return redirect('doctor_detail' if user_type == 'doctor' else 'patient_detail')
+
+            # Redirect based on user type
+            if user_type == 'doctor':
+                return redirect('doctor_detail')
+            elif user_type == 'patient':
+                return redirect('patient_detail')
+            else:
+                return redirect('account_login')
+
+        else:
+            messages.error(request, "Invalid session data. Try again.")
+            return redirect('account_signup')
 
     return render(request, 'signup/create_password.html')
 
 def doctor_detail(request):
-    if not request.user.is_authenticated:
-        return redirect('signin_doctor')
-
     if request.method == "POST":
         DoctorProfile.objects.create(
             user=request.user,
@@ -96,14 +107,12 @@ def doctor_detail(request):
             consultation_fee=request.POST.get('consultation_fee'),
             bio=request.POST.get('bio'),
         )
-        return redirect('index')
+        return redirect('index')  # or dashboard
 
     return render(request, 'signup/doctor_detail.html')
 
-def patient_detail(request):
-    if not request.user.is_authenticated:
-        return redirect('signin_patient')
 
+def patient_detail(request):
     if request.method == "POST":
         PatientProfile.objects.create(
             user=request.user,
@@ -139,85 +148,108 @@ def patient_detail(request):
             therapy_goals=request.POST.get('therapy_goals'),
             consent_acknowledged=request.POST.get('consent_acknowledged'),
         )
-        return redirect('index')
+        return redirect('success')  # or dashboard
 
     return render(request, 'signup/patient_detail.html')
 
+
+# -------------------- SIGNUP DOCTOR --------------------
 def signup_doctor(request):
+    
     if request.method == 'POST':
+        verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'User with this email already exists')
-            return redirect('signin_doctor')
-
         request.session['email'] = email
         request.session['user_type'] = 'doctor'
-        otp = str(random.randint(100000, 999999))
-        request.session['otp'] = otp
 
-        send_mail(
-            subject='Doctor OTP Verification',
-            message=f'Your OTP is: {otp}',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
-        return redirect('verify_otp')
+        if verification_method == 'email' and email:
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['email'] = email
+
+            send_mail(
+                subject='Doctor OTP',
+                message=f'Your OTP is {otp}',
+                from_email='fatemadhalech16@gmail.com',  # change to your .env value
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return render(request, 'signup/verify_otp.html', {'email': email})
+
+        elif verification_method == 'phone' and phone:
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['phone'] = phone
+            print(f"Doctor OTP sent to {phone}: {otp}")
+            return render(request, 'signup/verify_otp.html', {'phone': phone})
 
     return render(request, 'signup/doctor.html')
 
 def signup_patient(request):
     if request.method == 'POST':
+        verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'User with this email already exists')
-            return redirect('signin_patient')
-
-        request.session['email'] = email
         request.session['user_type'] = 'patient'
-        otp = str(random.randint(100000, 999999))
-        request.session['otp'] = otp
 
-        send_mail(
-            subject='Patient OTP Verification',
-            message=f'Your OTP is: {otp}',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
-        return redirect('verify_otp')
+        if verification_method == 'email' and email:
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['email'] = email
+
+            send_mail(
+                subject='Patient OTP',
+                message=f'Your OTP is {otp}',
+                from_email='fatemadhalech16@gmail.com',  # use your email
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return render(request, 'signup/verify_otp.html', {'email': email})
+
+        elif verification_method == 'phone' and phone:
+            otp = str(random.randint(100000, 999999))
+            request.session['otp'] = otp
+            request.session['phone'] = phone
+            print(f"Patient OTP sent to {phone}: {otp}")
+            return render(request, 'signup/verify_otp.html', {'phone': phone})
 
     return render(request, 'signup/patient.html')
 
+
+# -------------------- SIGNIN DOCTOR --------------------
+
 def signin_doctor(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        username = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, username=email, password=password)
-        
+        user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('index')
-        messages.error(request, 'Invalid credentials')
+            return redirect('home')
+        else:
+            return render(request, 'signin/doctor.html', {'error': 'Invalid credentials'})
     
     return render(request, 'signin/doctor.html')
 
+
+
+# -------------------- SIGNIN PATIENT --------------------
 def signin_patient(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        username = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, username=email, password=password)
-        
+        user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('index')
-        messages.error(request, 'Invalid credentials')
+            return redirect('home')
+        else:
+            return render(request, 'signin/patient.html', {'error': 'Invalid credentials'})
     
     return render(request, 'signin/patient.html')
+
 
 def book_appointment_view(request):
     today = date.today().isoformat()
@@ -231,17 +263,19 @@ def appointment_submit(request):
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         services = request.POST.get("services")
-        date_val = request.POST.get("date")
+        date = request.POST.get("date")
 
-        Appointment.objects.create(
+        # Save to model
+        appointment = Appointment.objects.create(
             fname=fname,
             lname=lname,
             email=email,
             phone=phone,
             services=services,
-            date=date_val
+            date=date
         )
 
+        # Email to user
         send_mail(
             subject="Your appointment request is received",
             message=f"Hi {fname},\n\nYour form has been submitted successfully. We'll get back to you shortly.",
@@ -250,9 +284,10 @@ def appointment_submit(request):
             fail_silently=False,
         )
 
+        # Email to admin
         send_mail(
             subject="New appointment inquiry",
-            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nService: {services}\nDate: {date_val}",
+            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nService: {services}\nDate: {date}",
             from_email="fatemadhalech16@gmail.com",
             recipient_list=["fatemadhalech16@gmail.com"],
             fail_silently=False,
@@ -269,17 +304,19 @@ def contact_submit(request):
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         message = request.POST.get("message")
-        date_val = request.POST.get("date")
+        date = request.POST.get("date")
 
-        Contact.objects.create(
+        # Save form data
+        contact_obj = Contact.objects.create(
             fname=fname,
             lname=lname,
             email=email,
             phone=phone,
             message=message,
-            date=date_val
+            date=date
         )
 
+        # Email to user
         send_mail(
             subject="Your appointment request is received",
             message=f"Hi {fname},\n\nYour enquiry has been submitted successfully. We'll get back to you shortly.",
@@ -288,9 +325,10 @@ def contact_submit(request):
             fail_silently=True,
         )
 
+        # Email to admin
         send_mail(
             subject="New appointment inquiry",
-            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nMessage: {message}\nDate: {date_val}",
+            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nMessage: {message}\nDate: {date}",
             from_email="fatemadhalech16@gmail.com",
             recipient_list=["fatemadhalech16@gmail.com"],
             fail_silently=True,
@@ -299,7 +337,6 @@ def contact_submit(request):
         return JsonResponse({"success": True})
 
     return JsonResponse({"success": False})
-
 def index(request):
     return render(request, 'index.html')
 
@@ -329,3 +366,33 @@ def faqs(request):
 
 def image_gallery(request):
     return render(request, 'image-gallery.html')
+
+def index_slider(request):
+    return render(request, 'index-slider.html')
+
+def index_video(request):
+    return render(request, 'index-video.html')
+
+def pricing(request):
+    return render(request, 'pricing.html')
+
+def service_single(request):
+    return render(request, 'service-single.html')
+
+def services(request):
+    return render(request, 'services.html')
+
+def team(request):
+    return render(request, 'team.html')
+
+def team_single(request):
+    return render(request, 'team-single.html')
+
+def testimonial(request):
+    return render(request, 'testimonial.html')
+
+def video_gallery(request):
+    return render(request, 'video-gallery.html')
+
+def error_404(request):
+    return render(request, '404.html')
