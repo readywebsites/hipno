@@ -75,9 +75,9 @@ def create_password(request):
 
             # Redirect based on user type
             if user_type == 'doctor':
-                return redirect('doctor-detail')
+                return redirect('doctor_detail')
             elif user_type == 'patient':
-                return redirect('patient-detail')
+                return redirect('patient_detail')
             else:
                 return redirect('account_login')
 
