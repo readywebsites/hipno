@@ -219,8 +219,6 @@ def signin_patient(request):
     
     return render(request, 'signin/patient.html')
 
-
-
 def book_appointment_view(request):
     today = date.today().isoformat()
     return render(request, "book_appointment.html", {"today_date": today})
@@ -233,19 +231,17 @@ def appointment_submit(request):
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         services = request.POST.get("services")
-        date = request.POST.get("date")
+        date_val = request.POST.get("date")
 
-        # Save to model
-        appointment = Appointment.objects.create(
+        Appointment.objects.create(
             fname=fname,
             lname=lname,
             email=email,
             phone=phone,
             services=services,
-            date=date
+            date=date_val
         )
 
-        # Email to user
         send_mail(
             subject="Your appointment request is received",
             message=f"Hi {fname},\n\nYour form has been submitted successfully. We'll get back to you shortly.",
@@ -254,10 +250,9 @@ def appointment_submit(request):
             fail_silently=False,
         )
 
-        # Email to admin
         send_mail(
             subject="New appointment inquiry",
-            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nService: {services}\nDate: {date}",
+            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nService: {services}\nDate: {date_val}",
             from_email="fatemadhalech16@gmail.com",
             recipient_list=["fatemadhalech16@gmail.com"],
             fail_silently=False,
@@ -274,19 +269,17 @@ def contact_submit(request):
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         message = request.POST.get("message")
-        date = request.POST.get("date")
+        date_val = request.POST.get("date")
 
-        # Save form data
-        contact_obj = Contact.objects.create(
+        Contact.objects.create(
             fname=fname,
             lname=lname,
             email=email,
             phone=phone,
             message=message,
-            date=date
+            date=date_val
         )
 
-        # Email to user
         send_mail(
             subject="Your appointment request is received",
             message=f"Hi {fname},\n\nYour enquiry has been submitted successfully. We'll get back to you shortly.",
@@ -295,10 +288,9 @@ def contact_submit(request):
             fail_silently=True,
         )
 
-        # Email to admin
         send_mail(
             subject="New appointment inquiry",
-            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nMessage: {message}\nDate: {date}",
+            message=f"New inquiry from {fname} {lname}\nEmail: {email}\nPhone: {phone}\nMessage: {message}\nDate: {date_val}",
             from_email="fatemadhalech16@gmail.com",
             recipient_list=["fatemadhalech16@gmail.com"],
             fail_silently=True,
@@ -307,6 +299,7 @@ def contact_submit(request):
         return JsonResponse({"success": True})
 
     return JsonResponse({"success": False})
+
 def index(request):
     return render(request, 'index.html')
 
@@ -336,33 +329,3 @@ def faqs(request):
 
 def image_gallery(request):
     return render(request, 'image-gallery.html')
-
-def index_slider(request):
-    return render(request, 'index-slider.html')
-
-def index_video(request):
-    return render(request, 'index-video.html')
-
-def pricing(request):
-    return render(request, 'pricing.html')
-
-def service_single(request):
-    return render(request, 'service-single.html')
-
-def services(request):
-    return render(request, 'services.html')
-
-def team(request):
-    return render(request, 'team.html')
-
-def team_single(request):
-    return render(request, 'team-single.html')
-
-def testimonial(request):
-    return render(request, 'testimonial.html')
-
-def video_gallery(request):
-    return render(request, 'video-gallery.html')
-
-def error_404(request):
-    return render(request, '404.html')
