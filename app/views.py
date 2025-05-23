@@ -4,12 +4,16 @@ from .models import Appointment, Contact, DoctorProfile, PatientProfile
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from datetime import date
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 import random
 from datetime import datetime  # Add this at the top of your views.py
 from django.conf import settings
 from django.contrib.auth.models import User
+
+def logout_view(request):
+    logout(request)
+    return redirect('index')
 
 def test_template(request):
     return render(request, 'signup/doctor_detail.html')
@@ -156,6 +160,10 @@ def signup_doctor(request):
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'User already exists with this email.')
+            return render(request, 'signup/doctor.html')
+            
         request.session['email'] = email
         request.session['user_type'] = 'doctor'
 
@@ -187,6 +195,10 @@ def signup_patient(request):
         verification_method = request.POST.get('verification_method')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'User already exists with this email.')
+            return render(request, 'signup/patient.html')
 
         request.session['user_type'] = 'patient'
 
@@ -223,7 +235,7 @@ def signin_doctor(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('home')
+            return redirect('index') 
         else:
             return render(request, 'signin/doctor.html', {'error': 'Invalid credentials'})
     
@@ -239,7 +251,7 @@ def signin_patient(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('home')
+            return redirect('index')
         else:
             return render(request, 'signin/patient.html', {'error': 'Invalid credentials'})
     
