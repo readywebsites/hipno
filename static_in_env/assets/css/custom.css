@@ -707,7 +707,11 @@ header.main-header .header-sticky.active::before{
 
 .hero{
 	position: relative;
+<<<<<<< HEAD
 	background: url('../img/home page bg.jpg');
+=======
+	background: url('../img/hero-bg.jpg');
+>>>>>>> master
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-size: cover;
